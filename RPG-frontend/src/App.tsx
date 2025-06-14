@@ -8,8 +8,8 @@ function App() {
   const [count, setCount] = useState(0);
 
   return (
-    <>
-      <Header />
+    <div className="dark">
+      <Header onChangeTheme={() => {}} />
       <div>
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
@@ -31,7 +31,7 @@ function App() {
         Click on the Vite and React logos to learn more
       </p>
       <div className="size-96 bg-amber-500 " />
-    </>
+    </div>
   );
 }
 

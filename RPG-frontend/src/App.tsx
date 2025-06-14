@@ -3,6 +3,7 @@ import clsx from "clsx";
 import "./App.css";
 import { Header } from "./components/Header";
 import { colorTransition } from "./styles";
+import { Analytics } from "@vercel/analytics/next";
 
 function App() {
   const [isDark, setIsDark] = useState(
@@ -11,6 +12,7 @@ function App() {
 
   return (
     <div className={clsx("flex flex-col h-screen", isDark ? "dark" : "")}>
+      <Analytics />
       <Header onChangeTheme={setIsDark} isDark={isDark} />
 
       <div

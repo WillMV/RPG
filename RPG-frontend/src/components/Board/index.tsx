@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect } from "react";
-import { Pixel } from "../Pixel";
+import { useEffect, useState } from "react";
+import { Pixel, type PixelProps } from "../Pixel";
+import React from "react";
 
 interface BoardProps {
   size: number;
@@ -8,15 +9,26 @@ interface BoardProps {
   y: number;
   handleZoomChange: (value: number) => void;
 }
+
+type PixelElement = React.ReactElement<PixelProps>;
+
 export const Board = ({ x, y, size, handleZoomChange }: BoardProps) => {
+  const [pixels, setPixels] = useState<PixelElement[][]>([]);
+
+  useEffect(() => {
+    createPixels();
+  }, [x, y]);
+
   useEffect(() => {
     const eventHandler = (e: WheelEvent) => {
       if (e.ctrlKey) {
         e.preventDefault();
         if (e.deltaY < 0) {
-          handleZoomChange(size + 0.2);
+          const incrementSize = size + 0.2;
+          handleZoomChange(incrementSize >= 2 ? 2 : incrementSize);
         } else {
-          handleZoomChange(size - 0.2);
+          const reduceSize = size - 0.2;
+          handleZoomChange(reduceSize <= 0.5 ? 0.5 : reduceSize);
         }
       }
     };
@@ -29,23 +41,17 @@ export const Board = ({ x, y, size, handleZoomChange }: BoardProps) => {
     };
   }, [size]);
 
-  const renderBoard = () => {
-    const items: React.ReactNode[] = [];
+  const createPixels = () => {
+    const items: PixelElement[][] = [];
 
     for (let index = 0; index <= x; index++) {
       items.push(
-        <div
-          key={index}
-          className="grid items-center justify-center"
-          style={{ gridTemplateRows: `repeat(${y + 1}, minmax(0, 1fr))` }}
-        >
-          {Array.from({ length: y + 1 }).map((_, i) => (
-            <Pixel key={i} size={size} />
-          ))}
-        </div>
+        Array.from({ length: y + 1 }).map((_, i) => (
+          <Pixel key={i} id={`pixel_${index}_${i}`} size={size} />
+        ))
       );
     }
-    return items;
+    setPixels(items);
   };
 
   return (
@@ -57,7 +63,16 @@ export const Board = ({ x, y, size, handleZoomChange }: BoardProps) => {
         className="flex transition-transform duration-200"
         style={{ transform: `scale(${size}` }}
       >
-        {renderBoard()}
+        <div
+          className="grid"
+          style={{ gridTemplateColumns: `repeat(${x + 1}, auto)` }}
+        >
+          {pixels.map((col, i) => (
+            <div key={i} className="flex flex-col">
+              {col.map((pixel) => pixel)}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

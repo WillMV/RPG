@@ -1,12 +1,20 @@
+import clsx from "clsx";
+import { colorTransition } from "../../styles";
+
 interface PixelProps {
   size: number;
-  key: number;
+  children?: React.ReactNode;
 }
-export const Pixel = ({ key }: PixelProps) => {
+export const Pixel = ({ children }: PixelProps) => {
   return (
     <div
-      key={key}
-      className="bg-gray-300 dark:bg-gray-700 border-1 border-gray-500 size-10"
-    ></div>
+      className={clsx(
+        "dark:bg-gray-300 bg-gray-700 border-1 border-gray-500 size-10 ",
+
+        colorTransition
+      )}
+    >
+      {children}
+    </div>
   );
 };

@@ -11,7 +11,7 @@ export const Pixel = ({ children, id }: PixelProps) => {
     <div
       id={id}
       className={clsx(
-        "dark:bg-gray-300 bg-gray-700 border-1 border-gray-500 size-10 ",
+        "dark:bg-gray-300 bg-gray-700 border-1 select-none  border-gray-500 size-10 ",
 
         colorTransition
       )}

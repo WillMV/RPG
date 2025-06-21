@@ -20,6 +20,37 @@ export const Board = ({ x, y, size, handleZoomChange }: BoardProps) => {
   }, [x, y]);
 
   useEffect(() => {
+    const handlerDrop = (e: MouseEvent) => {
+      const target = e.target;
+
+      if (target instanceof HTMLDivElement && target.id.includes("pixel")) {
+        const [name, index1, index2] = target.id.split("_");
+        if (!name || !index1 || !index2) {
+          return;
+        }
+
+        const newPixel = (
+          <Pixel
+            size={size}
+            children={<div className="size-full bg-amber-400" />}
+          />
+        );
+
+        setPixels((prevPixels) => {
+          const newPixels = [...prevPixels];
+          newPixels[parseInt(index1)][parseInt(index2)] = newPixel;
+          return newPixels;
+        });
+      }
+    };
+
+    document.addEventListener("mouseup", handlerDrop);
+    return () => {
+      document.removeEventListener("mouseup", handlerDrop);
+    };
+  }, [pixels]);
+
+  useEffect(() => {
     const eventHandler = (e: WheelEvent) => {
       if (e.ctrlKey) {
         e.preventDefault();

@@ -26,7 +26,6 @@ export const Board = ({ x, y, color }: BoardProps) => {
   useEffect(() => {
     const handlerDrop = (e: MouseEvent) => {
       const target = e.target;
-      console.log("target", target);
 
       if (target instanceof HTMLDivElement && target.id.includes("pixel")) {
         const [name, index1, index2] = target.id.split("_");

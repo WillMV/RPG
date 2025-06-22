@@ -3,7 +3,7 @@ import clsx from "clsx";
 import "./App.css";
 import { Header } from "./components/Header";
 import { colorTransition } from "./styles";
-import { Analytics } from "@vercel/analytics/react";
+
 import { Board } from "./components/Board";
 
 function App() {
@@ -23,7 +23,6 @@ function App() {
         isDark ? "dark" : ""
       )}
     >
-      <Analytics />
       <Header onChangeTheme={setIsDark} isDark={isDark}>
         <div className="flex gap-2">
           <legend className="flex flex-col items-center border-[1px] rounded-[5px] p-2 border-gray-500 ">

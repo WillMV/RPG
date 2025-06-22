@@ -28,6 +28,8 @@ export const Board = ({ x, y, color }: BoardProps) => {
       const target = e.target;
 
       if (target instanceof HTMLDivElement && target.id.includes("pixel")) {
+        console.log("target", target);
+
         const [name, index1, index2] = target.id.split("_");
         if (!name || !index1 || !index2) {
           return;
@@ -38,11 +40,12 @@ export const Board = ({ x, y, color }: BoardProps) => {
         const newPixel = (
           <Pixel
             size={zoom}
+            key={pixelTarget.key}
             id={pixelTarget.props.id}
             children={
               <div
-                key={pixelTarget.key}
-                className={`size-full`}
+                id={`pixelContent_${index1}_${index2}`}
+                className={`size-full  top-0 left-0`}
                 style={{ backgroundColor: color }}
               />
             }

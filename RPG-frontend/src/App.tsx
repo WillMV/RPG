@@ -81,7 +81,7 @@ function App() {
           </div>
         </SideBar>
         <div className="flex flex-col h-screen overflow-clip w-screen">
-          <Header onChangeTheme={setIsDark} isDark={isDark}>
+          <Header>
             <div className="flex flex-1 justify-end">
               <div className="flex items-center gap-10">
                 <ThemeButton />

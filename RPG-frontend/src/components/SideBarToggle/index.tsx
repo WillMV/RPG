@@ -1,23 +1,35 @@
 import clsx from "clsx";
-import { MdClose, MdOutlineSettings } from "react-icons/md";
+import * as Motion from "motion/react-client";
+import { MdOutlineSettings, MdClose } from "react-icons/md";
 import { colorTransition } from "../../styles";
-import { useMemo } from "react";
 
 interface SideBarToggleProps {
-  onToggle: () => void;
   value: boolean;
+  onToggle: () => void;
 }
 
-export const SideBarToggle = ({ onToggle, value }: SideBarToggleProps) => {
-  const Icon = useMemo(() => (value ? MdClose : MdOutlineSettings), [value]);
-
+export const SideBarToggle = ({ value, onToggle }: SideBarToggleProps) => {
   return (
-    <Icon
-      className={clsx(
-        "cursor-pointer dark:text-gray-300 text-gray-800 size-6",
-        colorTransition
-      )}
+    <Motion.div
+      layoutId="sidebar-button"
+      className="cursor-pointer"
       onClick={onToggle}
-    />
+    >
+      {value ? (
+        <MdClose
+          className={clsx(
+            "text-gray-700 dark:text-gray-300 size-6",
+            colorTransition
+          )}
+        />
+      ) : (
+        <MdOutlineSettings
+          className={clsx(
+            "text-gray-700 dark:text-gray-300 size-6",
+            colorTransition
+          )}
+        />
+      )}
+    </Motion.div>
   );
 };

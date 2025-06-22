@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pixel, type PixelProps } from "../Pixel";
 import React from "react";
 
@@ -8,11 +8,12 @@ interface BoardProps {
   x: number;
   y: number;
   handleZoomChange: (value: number) => void;
+  color: string;
 }
 
 type PixelElement = React.ReactElement<PixelProps>;
 
-export const Board = ({ x, y, size, handleZoomChange }: BoardProps) => {
+export const Board = ({ x, y, size, handleZoomChange, color }: BoardProps) => {
   const [pixels, setPixels] = useState<PixelElement[][]>([]);
 
   useEffect(() => {
@@ -22,6 +23,7 @@ export const Board = ({ x, y, size, handleZoomChange }: BoardProps) => {
   useEffect(() => {
     const handlerDrop = (e: MouseEvent) => {
       const target = e.target;
+      console.log("target", target);
 
       if (target instanceof HTMLDivElement && target.id.includes("pixel")) {
         const [name, index1, index2] = target.id.split("_");
@@ -29,10 +31,19 @@ export const Board = ({ x, y, size, handleZoomChange }: BoardProps) => {
           return;
         }
 
+        const pixelTarget = pixels[parseInt(index1)][parseInt(index2)];
+
         const newPixel = (
           <Pixel
             size={size}
-            children={<div className="size-full bg-amber-400" />}
+            id={pixelTarget.props.id}
+            children={
+              <div
+                key={pixelTarget.key}
+                className={`size-full`}
+                style={{ backgroundColor: color }}
+              />
+            }
           />
         );
 
@@ -48,7 +59,7 @@ export const Board = ({ x, y, size, handleZoomChange }: BoardProps) => {
     return () => {
       document.removeEventListener("mouseup", handlerDrop);
     };
-  }, [pixels]);
+  }, [pixels, color]);
 
   useEffect(() => {
     const eventHandler = (e: WheelEvent) => {
@@ -85,10 +96,19 @@ export const Board = ({ x, y, size, handleZoomChange }: BoardProps) => {
     setPixels(items);
   };
 
+  const board = useMemo(() => {
+    const board = pixels.map((col, i) => (
+      <div key={i} className="flex flex-col">
+        {col.map((pixel) => pixel)}
+      </div>
+    ));
+    return board;
+  }, [pixels]);
+
   return (
     <div
       id="board"
-      className="flex w-[80vw] h-[80vh] justify-center items-center overflow-scroll bg-gray-200 "
+      className="flex w-full h-full justify-center items-center overflow-auto bg-gray-200  dark:bg-gray-600"
     >
       <div
         className="flex transition-transform duration-200"
@@ -96,13 +116,9 @@ export const Board = ({ x, y, size, handleZoomChange }: BoardProps) => {
       >
         <div
           className="grid"
-          style={{ gridTemplateColumns: `repeat(${x + 1}, auto)` }}
+          style={{ gridTemplateColumns: `repeat(${x + 1},auto )` }}
         >
-          {pixels.map((col, i) => (
-            <div key={i} className="flex flex-col">
-              {col.map((pixel) => pixel)}
-            </div>
-          ))}
+          {board}
         </div>
       </div>
     </div>

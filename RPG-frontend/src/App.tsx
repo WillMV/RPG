@@ -15,6 +15,7 @@ function App() {
   const [xPixels, setXPixels] = useState(10);
   const [yPixels, setYPixels] = useState(10);
   const [size, setSize] = useState(1);
+  const [color, setColor] = useState<string>("#ff0000");
 
   const handleZoomChange = (zoom: number) => {
     setSize(zoom);
@@ -23,7 +24,7 @@ function App() {
   return (
     <div
       className={clsx(
-        "flex flex-col h-screen overflow-clip",
+        "flex flex-col h-screen overflow-clip w-screen",
         isDark ? "dark" : ""
       )}
     >
@@ -51,23 +52,22 @@ function App() {
             />
           </legend>
           <ZoomSlider zoom={size} onZoomChange={setSize} />
-          {/* <legend className="flex flex-col items-center border-[1px] rounded-[5px] p-2 border-gray-500 ">
-            Size = {size}
+          <legend className="flex flex-col items-center border-[1px] rounded-[5px] p-2 border-gray-500 ">
+            <p className={`text-[${color}]`}>Cor</p>
             <input
-              type="range"
-              min="1"
-              max="50"
-              step="0.1"
-              value={size}
-              onChange={(e) => setSize(parseInt(e.target.value))}
+              type="color"
+              value={color}
+              onChange={(e) => {
+                setColor(e.target.value);
+              }}
             />
-          </legend>*/}
+          </legend>
         </div>
       </Header>
 
       <main
         className={clsx(
-          "flex flex-1 justify-center p-5 bg-white-200 dark:bg-gray-600",
+          "flex flex-1 overflow-hidden justify-center p-5 bg-gray-200 dark:bg-gray-600",
           colorTransition
         )}
       >
@@ -76,6 +76,7 @@ function App() {
           x={xPixels}
           y={yPixels}
           handleZoomChange={handleZoomChange}
+          color={color}
         />
       </main>
     </div>

@@ -4,19 +4,20 @@ import { Pixel, type PixelProps } from "../Pixel";
 import React from "react";
 import clsx from "clsx";
 import { colorTransition } from "../../styles";
+import { ZoomSlider } from "../ZoomSlider";
 
 interface BoardProps {
-  size: number;
   x: number;
   y: number;
-  handleZoomChange: (value: number) => void;
+
   color: string;
 }
 
 type PixelElement = React.ReactElement<PixelProps>;
 
-export const Board = ({ x, y, size, handleZoomChange, color }: BoardProps) => {
+export const Board = ({ x, y, color }: BoardProps) => {
   const [pixels, setPixels] = useState<PixelElement[][]>([]);
+  const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
     createPixels();
@@ -37,7 +38,7 @@ export const Board = ({ x, y, size, handleZoomChange, color }: BoardProps) => {
 
         const newPixel = (
           <Pixel
-            size={size}
+            size={zoom}
             id={pixelTarget.props.id}
             children={
               <div
@@ -68,10 +69,10 @@ export const Board = ({ x, y, size, handleZoomChange, color }: BoardProps) => {
       if (e.ctrlKey) {
         e.preventDefault();
         if (e.deltaY < 0) {
-          const incrementSize = size + 0.2;
+          const incrementSize = zoom + 0.2;
           handleZoomChange(incrementSize >= 2 ? 2 : incrementSize);
         } else {
-          const reduceSize = size - 0.2;
+          const reduceSize = zoom - 0.2;
           handleZoomChange(reduceSize <= 0.5 ? 0.5 : reduceSize);
         }
       }
@@ -83,7 +84,7 @@ export const Board = ({ x, y, size, handleZoomChange, color }: BoardProps) => {
         .getElementById("board")
         ?.removeEventListener("wheel", eventHandler);
     };
-  }, [size]);
+  }, [zoom]);
 
   const createPixels = () => {
     const items: PixelElement[][] = [];
@@ -91,12 +92,14 @@ export const Board = ({ x, y, size, handleZoomChange, color }: BoardProps) => {
     for (let index = 0; index <= x; index++) {
       items.push(
         Array.from({ length: y + 1 }).map((_, i) => (
-          <Pixel key={i} id={`pixel_${index}_${i}`} size={size} />
+          <Pixel key={i} id={`pixel_${index}_${i}`} size={zoom} />
         ))
       );
     }
     setPixels(items);
   };
+
+  const handleZoomChange = (zoom: number) => setZoom(zoom);
 
   const board = useMemo(() => {
     const board = pixels.map((col, i) => (
@@ -108,22 +111,26 @@ export const Board = ({ x, y, size, handleZoomChange, color }: BoardProps) => {
   }, [pixels]);
 
   return (
-    <div
-      id="board"
-      className={clsx(
-        "flex w-full h-full justify-center items-center overflow-auto bg-gray-200  dark:bg-gray-600",
-        colorTransition
-      )}
-    >
+    <div className="relative w-full">
+      <ZoomSlider zoom={zoom} onZoomChange={handleZoomChange} />
+
       <div
-        className="flex transition-transform duration-200"
-        style={{ transform: `scale(${size}` }}
+        id="board"
+        className={clsx(
+          "flex w-full h-full justify-center items-center overflow-auto bg-gray-200  dark:bg-gray-600",
+          colorTransition
+        )}
       >
         <div
-          className="grid"
-          style={{ gridTemplateColumns: `repeat(${x + 1},auto )` }}
+          className="flex transition-transform duration-200"
+          style={{ transform: `scale(${zoom}` }}
         >
-          {board}
+          <div
+            className="grid"
+            style={{ gridTemplateColumns: `repeat(${x + 1},auto )` }}
+          >
+            {board}
+          </div>
         </div>
       </div>
     </div>

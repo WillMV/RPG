@@ -5,7 +5,6 @@ import { Header } from "./components/Header";
 import { colorTransition } from "./styles";
 import { Analytics } from "@vercel/analytics/react";
 import { Board } from "./components/Board";
-import { ZoomSlider } from "./components/ZoomSlider";
 
 function App() {
   const [isDark, setIsDark] = useState(
@@ -14,12 +13,8 @@ function App() {
 
   const [xPixels, setXPixels] = useState(10);
   const [yPixels, setYPixels] = useState(10);
-  const [size, setSize] = useState(1);
-  const [color, setColor] = useState<string>("#ff0000");
 
-  const handleZoomChange = (zoom: number) => {
-    setSize(zoom);
-  };
+  const [color, setColor] = useState<string>("#ff0000");
 
   return (
     <div
@@ -51,7 +46,7 @@ function App() {
               onChange={(e) => setYPixels(parseInt(e.target.value))}
             />
           </legend>
-          <ZoomSlider zoom={size} onZoomChange={setSize} />
+
           <legend className="flex flex-col items-center border-[1px] rounded-[5px] p-2 border-gray-500 ">
             <p className={`text-[${color}]`}>Cor</p>
             <input
@@ -65,20 +60,14 @@ function App() {
         </div>
       </Header>
 
-      <main
+      <div
         className={clsx(
           "flex flex-1 overflow-hidden justify-center p-5 bg-gray-200 dark:bg-gray-600",
           colorTransition
         )}
       >
-        <Board
-          size={size}
-          x={xPixels}
-          y={yPixels}
-          handleZoomChange={handleZoomChange}
-          color={color}
-        />
-      </main>
+        <Board x={xPixels} y={yPixels} color={color} />
+      </div>
     </div>
   );
 }

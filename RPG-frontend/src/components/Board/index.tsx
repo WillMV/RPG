@@ -2,6 +2,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Pixel, type PixelProps } from "../Pixel";
 import React from "react";
+import clsx from "clsx";
+import { colorTransition } from "../../styles";
 
 interface BoardProps {
   size: number;
@@ -108,7 +110,10 @@ export const Board = ({ x, y, size, handleZoomChange, color }: BoardProps) => {
   return (
     <div
       id="board"
-      className="flex w-full h-full justify-center items-center overflow-auto bg-gray-200  dark:bg-gray-600"
+      className={clsx(
+        "flex w-full h-full justify-center items-center overflow-auto bg-gray-200  dark:bg-gray-600",
+        colorTransition
+      )}
     >
       <div
         className="flex transition-transform duration-200"

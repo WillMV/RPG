@@ -1,4 +1,6 @@
+import clsx from "clsx";
 import { FaMinus, FaPlus } from "react-icons/fa6";
+import { colorTransition } from "../../styles";
 interface ZoomSliderProps {
   min?: number;
   max?: number;
@@ -24,9 +26,17 @@ export const ZoomSlider = ({
     <div className="flex items-center gap-2 w-full max-w-xs">
       <button
         onClick={() => updateZoom(zoom - step)}
-        className="p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded"
+        className={clsx(
+          "p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded",
+          colorTransition
+        )}
       >
-        <FaMinus className="w-5 h-5 text-gray-800 dark:text-gray-100" />
+        <FaMinus
+          className={clsx(
+            "w-5 h-5 text-gray-800 dark:text-gray-100",
+            colorTransition
+          )}
+        />
       </button>
 
       <input
@@ -41,9 +51,17 @@ export const ZoomSlider = ({
 
       <button
         onClick={() => updateZoom(zoom + step)}
-        className="p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded"
+        className={clsx(
+          "p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded",
+          colorTransition
+        )}
       >
-        <FaPlus className="w-5 h-5 text-gray-800 dark:text-gray-100" />
+        <FaPlus
+          className={clsx(
+            "w-5 h-5 text-gray-800 dark:text-gray-100",
+            colorTransition
+          )}
+        />
       </button>
 
       <span className="w-10 text-center font-mono text-sm">

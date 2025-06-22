@@ -23,22 +23,40 @@ export const ZoomSlider = ({
   };
 
   return (
-    <div className="flex items-center gap-2 w-full max-w-xs">
-      <button
-        onClick={() => updateZoom(zoom - step)}
-        className={clsx(
-          "p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded",
-          colorTransition
-        )}
-      >
-        <FaMinus
+    <div className="flex flex-col w-full max-w-30 gap-2">
+      <div className="flex items-center gap-2 w-full max-w-xs">
+        <button
+          onClick={() => updateZoom(zoom - step)}
           className={clsx(
-            "w-5 h-5 text-gray-800 dark:text-gray-100",
+            "p-2 bg-gray-400 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded",
             colorTransition
           )}
-        />
-      </button>
-
+        >
+          <FaMinus
+            className={clsx(
+              "w-5 h-5 text-gray-800 dark:text-gray-100",
+              colorTransition
+            )}
+          />
+        </button>
+        <span className="w-10 text-center font-mono text-sm">
+          {zoom.toFixed(1)}x
+        </span>
+        <button
+          onClick={() => updateZoom(zoom + step)}
+          className={clsx(
+            "p-2 bg-gray-400 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded",
+            colorTransition
+          )}
+        >
+          <FaPlus
+            className={clsx(
+              "w-5 h-5 text-gray-800 dark:text-gray-100",
+              colorTransition
+            )}
+          />
+        </button>
+      </div>
       <input
         type="range"
         min={min}
@@ -46,27 +64,11 @@ export const ZoomSlider = ({
         step={step}
         value={zoom}
         onChange={(e) => updateZoom(parseFloat(e.target.value))}
-        className="w-full accent-blue-500"
-      />
-
-      <button
-        onClick={() => updateZoom(zoom + step)}
         className={clsx(
-          "p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded",
+          "w-full cursor-pointer accent-gray-400 ",
           colorTransition
         )}
-      >
-        <FaPlus
-          className={clsx(
-            "w-5 h-5 text-gray-800 dark:text-gray-100",
-            colorTransition
-          )}
-        />
-      </button>
-
-      <span className="w-10 text-center font-mono text-sm">
-        {zoom.toFixed(1)}x
-      </span>
+      />
     </div>
   );
 };

@@ -80,20 +80,31 @@ export const Board = ({ x, y, color }: BoardProps) => {
       }
     };
 
+    document?.addEventListener(
+      "wheel",
+      (e) => {
+        console.log(e);
+        if (e.ctrlKey) e.preventDefault();
+      },
+      { passive: false }
+    );
     document.getElementById("board")?.addEventListener("wheel", eventHandler);
     return () => {
       document
         .getElementById("board")
         ?.removeEventListener("wheel", eventHandler);
+      document?.addEventListener("wheel", (e) => {
+        e.preventDefault();
+      });
     };
   }, [zoom]);
 
   const createPixels = () => {
     const items: PixelElement[][] = [];
 
-    for (let index = 0; index <= x; index++) {
+    for (let index = 0; index <= x - 1; index++) {
       items.push(
-        Array.from({ length: y + 1 }).map((_, i) => (
+        Array.from({ length: y }).map((_, i) => (
           <Pixel key={i} id={`pixel_${index}_${i}`} size={zoom} />
         ))
       );
@@ -113,26 +124,27 @@ export const Board = ({ x, y, color }: BoardProps) => {
   }, [pixels]);
 
   return (
-    <div className="relative w-full">
-      <ZoomSlider zoom={zoom} onZoomChange={handleZoomChange} />
+    <div
+      id="board"
+      className={clsx(
+        "relative flex flex-1 min-h-0 min-w-0 justify-center items-center  bg-gray-200  dark:bg-gray-600 ",
+        colorTransition
+      )}
+    >
+      <div className="absolute top-4 left-5 z-10 p-2 rounded-xl bg-gray-400/50">
+        <ZoomSlider zoom={zoom} onZoomChange={handleZoomChange} />
+      </div>
 
-      <div
-        id="board"
-        className={clsx(
-          "flex w-full h-full justify-center items-center overflow-auto bg-gray-200  dark:bg-gray-600",
-          colorTransition
-        )}
-      >
+      <div className="max-w-full max-h-full overflow-auto">
         <div
-          className="flex transition-transform duration-200"
-          style={{ transform: `scale(${zoom}` }}
+          className="grid max-w-[70vw] max-h-[100%] transition-transform duration-200"
+          style={{
+            gridTemplateColumns: `repeat(${x + 1},auto )`,
+            gridTemplateRows: `repeat(${y + 1},auto )`,
+            transform: `scale(${zoom}`,
+          }}
         >
-          <div
-            className="grid"
-            style={{ gridTemplateColumns: `repeat(${x + 1},auto )` }}
-          >
-            {board}
-          </div>
+          {board}
         </div>
       </div>
     </div>

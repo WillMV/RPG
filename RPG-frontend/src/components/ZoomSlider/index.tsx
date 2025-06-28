@@ -39,7 +39,7 @@ export const ZoomSlider = ({
             )}
           />
         </button>
-        <span className="w-10 text-center font-mono text-sm">
+        <span className="w-10 text-center font-mono text-sm select-none">
           {zoom.toFixed(1)}x
         </span>
         <button

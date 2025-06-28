@@ -5,7 +5,7 @@ import { Header } from "./components/Header";
 import { colorTransition } from "./styles";
 
 import { Board } from "./components/Board";
-import { SideBar } from "./components/SideBar";
+import { SideBar } from "./components/Sidebar";
 import { MdOutlineDarkMode, MdOutlineLightMode } from "react-icons/md";
 import { SideBarToggle } from "./components/SideBarToggle";
 
@@ -44,62 +44,73 @@ function App() {
   };
 
   return (
-    <div className={clsx(isDark ? "dark" : "")}>
-      <div className="flex flex-row-reverse">
-        <SideBar onClose={() => setSideBar(false)} open={sideBar}>
-          <div className="flex flex-col gap-2 justify-center flex-1">
-            <legend className="flex flex-col items-center border-[1px] rounded-[5px] p-2 border-gray-500 ">
-              X = {xPixels}
-              <input
-                type="range"
-                min="1"
-                max="50"
-                value={xPixels}
-                onChange={(e) => setXPixels(parseInt(e.target.value))}
-              />
+    <div className={clsx(isDark ? "dark" : "", "relative")}>
+      <div
+        className={
+          "flex flex-row-reverse h-[100vh] bg-gray-200 dark:bg-gray-900"
+        }
+      >
+        <SideBar open={sideBar} onClose={() => setSideBar(false)}>
+          <fieldset className="flex flex-col gap-2 justify-center flex-1 items-center border-[1px] rounded-[5px] p-2 border-gray-500 ">
+            <legend title="Tamanho do x" className="">
+              Board
             </legend>
-            <legend className="flex flex-col items-center border-[1px] rounded-[5px] p-2 border-gray-500 ">
-              Y = {yPixels}
-              <input
-                type="range"
-                min="1"
-                max="50"
-                value={yPixels}
-                onChange={(e) => setYPixels(parseInt(e.target.value))}
-              />
-            </legend>
-            <legend className="flex flex-col items-center border-[1px] rounded-[5px] p-2 border-gray-500 ">
-              <p className={`text-[${color}]`}>Cor</p>
-              <input
-                type="color"
-                value={color}
-                onChange={(e) => {
-                  setColor(e.target.value);
-                }}
-              />
-            </legend>
-          </div>
+            <label htmlFor="xPixels">X = {xPixels}</label>
+            <input
+              id="xPixels"
+              type="range"
+              min="1"
+              max="50"
+              value={xPixels}
+              onChange={(e) => setXPixels(parseInt(e.target.value))}
+            />
+
+            <label htmlFor="yPixels">Y = {yPixels}</label>
+            <input
+              id="yPixels"
+              type="range"
+              min="1"
+              max="50"
+              value={yPixels}
+              onChange={(e) => setYPixels(parseInt(e.target.value))}
+            />
+            <label htmlFor="color" className={`text-[${color}]`}>
+              Cor
+            </label>
+            <input
+              id="color"
+              type="color"
+              value={color}
+              onChange={(e) => {
+                setColor(e.target.value);
+              }}
+            />
+          </fieldset>
         </SideBar>
-        <div className="flex flex-col h-screen overflow-clip w-screen">
-          <Header>
-            <div className="flex flex-1 justify-end">
-              <div className="flex items-center gap-10">
-                <ThemeButton />
-                <SideBarToggle
-                  onToggle={() => setSideBar(!sideBar)}
-                  value={sideBar}
-                />
-              </div>
-            </div>
-          </Header>
-          <div
-            className={clsx(
-              "flex flex-1 overflow-hidden justify-center p-5 bg-gray-200 dark:bg-gray-600",
-              colorTransition
+        <div
+          className={clsx(
+            "flex flex-col h-screen overflow-clip w-screen min-w-0",
+
+            sideBar ? " not-md:hidden" : ""
+          )}
+        >
+          <Header className=" justify-between gap-10">
+            <ThemeButton />
+            <h1>Pixel RPG</h1>
+            {!sideBar ? (
+              <SideBarToggle
+                onToggle={() => {
+                  console.log(sideBar);
+                  setSideBar(!sideBar);
+                }}
+                value={sideBar}
+              />
+            ) : (
+              <div />
             )}
-          >
-            <Board x={xPixels} y={yPixels} color={color} />
-          </div>
+          </Header>
+
+          <Board x={xPixels} y={yPixels} color={color} />
         </div>
       </div>
     </div>

@@ -6,11 +6,22 @@ import { colorTransition } from "./styles";
 import { Analytics } from "@vercel/analytics/react";
 import { Board } from "./components/Board";
 import { ZoomSlider } from "./components/ZoomSlider";
+import { io } from "socket.io-client";
 
 function App() {
   const [isDark, setIsDark] = useState(
     window.matchMedia("(prefers-color-scheme: dark)").matches
   );
+
+  const socket = io("http://localhost:3000");
+
+  socket.on("connect", () => {
+    console.log("socket connected");
+  });
+
+  socket.on("disconnect", () => {
+    console.log("socket disconnected");
+  });
 
   const [xPixels, setXPixels] = useState(10);
   const [yPixels, setYPixels] = useState(10);

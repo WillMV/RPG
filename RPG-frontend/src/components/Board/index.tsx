@@ -23,7 +23,7 @@ export const Board = ({ x, y, color }: BoardProps) => {
 
   const boardRef = useRef<HTMLDivElement>(null);
   const { setValue } = useDebounce({
-    delay: 1000,
+    delay: 500,
     onDebounce: () => {
       createPixels();
       setColumns(x);
@@ -49,7 +49,7 @@ export const Board = ({ x, y, color }: BoardProps) => {
       { passive: false }
     );
     return () => {
-      document?.addEventListener("wheel", (e) => {
+      document?.removeEventListener("wheel", (e) => {
         e.preventDefault();
       });
     };
@@ -83,17 +83,30 @@ export const Board = ({ x, y, color }: BoardProps) => {
   useEffect(() => {
     if (!boardRef.current) return;
     const currentBoard = boardRef.current;
+
     const eventHandler = (e: WheelEvent) => {
-      if (e.ctrlKey) {
-        e.preventDefault();
-        if (e.deltaY < 0) {
-          const incrementSize = zoom + 0.1;
-          handleZoomChange(incrementSize >= 2 ? 2 : incrementSize);
-        } else {
-          const reduceSize = zoom - 0.1;
-          handleZoomChange(reduceSize <= 0.5 ? 0.5 : reduceSize);
-        }
-      }
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      if (!e.currentTarget) return;
+
+      const oldZoom = zoom;
+      const newZoom = Math.min(
+        Math.max(oldZoom + (e.deltaY < 0 ? 0.1 : -0.1), 0.5),
+        2
+      );
+
+      const rect = currentBoard.getBoundingClientRect();
+
+      const mouseX = e.clientX - rect.left + currentBoard.scrollLeft;
+      const mouseY = e.clientY - rect.top + currentBoard.scrollTop;
+      handleZoomChange(newZoom);
+
+      requestAnimationFrame(() => {
+        currentBoard.scrollTo({
+          left: mouseX * (newZoom / oldZoom) - (e.clientX - rect.left),
+          top: mouseY * (newZoom / oldZoom) - (e.clientY - rect.top),
+        });
+      });
     };
 
     currentBoard.addEventListener("wheel", eventHandler, { passive: false });
@@ -104,8 +117,6 @@ export const Board = ({ x, y, color }: BoardProps) => {
 
   const createPixels = () => {
     const items: PixelProps[][] = [];
-
-    console.log("createPixels", x, y);
 
     for (let index = 0; index <= x - 1; index++) {
       items.push(
@@ -118,13 +129,24 @@ export const Board = ({ x, y, color }: BoardProps) => {
     setPixels(items);
   };
 
-  const handleZoomChange = (zoom: number) => setZoom(zoom);
+  const handleZoomChange = (newZoom: number) => {
+    setZoom(newZoom);
+
+    requestAnimationFrame(() => {
+      const el = boardRef.current;
+      if (el) {
+        el.style.overflow = "hidden";
+        void el.offsetHeight;
+        el.style.overflow = "auto";
+      }
+    });
+  };
 
   const board = useMemo(() => {
     const board = pixels.map((col, i) => (
       <div key={i} className="flex flex-col">
         {col.map((pixelProps) => (
-          <Pixel {...pixelProps} size={1} key={pixelProps.id} />
+          <Pixel {...pixelProps} key={pixelProps.id} />
         ))}
       </div>
     ));
@@ -133,27 +155,30 @@ export const Board = ({ x, y, color }: BoardProps) => {
 
   return (
     <div
-      id="board"
       className={clsx(
-        "relative flex flex-1 min-h-0 min-w-0 max-h-full  overflow-hidden bg-gray-200 dark:bg-gray-600 ",
+        "relative flex flex-1 items-center min-h-0 min-w-0 max-h-full  mx-5 my-5 p-5",
+        "bg-gray-200 dark:bg-gray-600 rounded-2xl border border-gray-400",
         colorTransition
       )}
     >
       <div className="absolute top-4 left-5 z-10 p-2 rounded-xl bg-gray-400/50">
         <ZoomSlider zoom={zoom} onZoomChange={handleZoomChange} />
       </div>
-      <div className="w-[90%] mx-5 my-24 p-5 rounded-2xl border border-gray-400 items-center ">
-        <div className="flex overflow-auto size-full justify-center-safe items-center-safe">
-          <div
-            className="grid p-10 transition-transform duration-200"
-            style={{
-              gridTemplateColumns: `repeat(${columns + 1},auto )`,
-              gridTemplateRows: `repeat(${rows + 1},auto )`,
-              transform: `scale(${zoom})`,
-            }}
-          >
-            {board}
-          </div>
+      <div
+        ref={boardRef}
+        className="flex overflow-auto  size-full justify-center-safe items-center-safe"
+      >
+        <div
+          className="grid bg-amber-50 transition-transform duration-200"
+          style={{
+            gridTemplateColumns: `repeat(${columns + 1},auto )`,
+            gridTemplateRows: `repeat(${rows + 1},auto )`,
+            transform: `scale(${zoom})`,
+            transformOrigin: "top left",
+            willChange: "transform",
+          }}
+        >
+          {board}
         </div>
       </div>
     </div>

@@ -21,7 +21,7 @@ export const Board = ({ x, y, color }: BoardProps) => {
 
   useEffect(() => {
     createPixels();
-  }, [x, y]);
+  }, [x, y, zoom]);
 
   useEffect(() => {
     const handlerDrop = (e: MouseEvent) => {
@@ -83,7 +83,6 @@ export const Board = ({ x, y, color }: BoardProps) => {
     document?.addEventListener(
       "wheel",
       (e) => {
-        console.log(e);
         if (e.ctrlKey) e.preventDefault();
       },
       { passive: false }
@@ -105,7 +104,16 @@ export const Board = ({ x, y, color }: BoardProps) => {
     for (let index = 0; index <= x - 1; index++) {
       items.push(
         Array.from({ length: y }).map((_, i) => (
-          <Pixel key={i} id={`pixel_${index}_${i}`} size={zoom} />
+          <Pixel
+            key={i}
+            id={`pixel_${index}_${i}`}
+            size={1}
+            children={
+              <div className="text-center flex-1 h-full bg-amber-50 size-10 flex justify-center items-center">
+                <p>{index + 1 + "," + (i + 1)}</p>
+              </div>
+            }
+          />
         ))
       );
     }
@@ -127,7 +135,7 @@ export const Board = ({ x, y, color }: BoardProps) => {
     <div
       id="board"
       className={clsx(
-        "relative flex flex-1 min-h-0 min-w-0 justify-center items-center  bg-gray-200  dark:bg-gray-600 ",
+        "relative flex flex-1 min-h-0 min-w-0 max-h-full max-w-full overflow-hidden bg-gray-200 dark:bg-gray-600 ",
         colorTransition
       )}
     >
@@ -135,16 +143,27 @@ export const Board = ({ x, y, color }: BoardProps) => {
         <ZoomSlider zoom={zoom} onZoomChange={handleZoomChange} />
       </div>
 
-      <div className="max-w-full max-h-full overflow-auto">
+      <div className="overflow-auto m-10 w-full items-center bg-green-100">
         <div
-          className="grid max-w-[70vw] max-h-[100%] transition-transform duration-200"
+          className="flex justify-center-safe min-size-full scroll-auto items-center-safe bg-blue-100"
           style={{
-            gridTemplateColumns: `repeat(${x + 1},auto )`,
-            gridTemplateRows: `repeat(${y + 1},auto )`,
-            transform: `scale(${zoom}`,
+            transform: `scale(${zoom})`,
+            transformOrigin: "top left",
+            width: `${(x + 1) * 45}px`,
+            height: `${(y + 1) * 45}px`,
+            minWidth: "100%",
+            minHeight: "100%",
           }}
         >
-          {board}
+          <div
+            className="grid size-min m-10 bg-red-50 transition-transform duration-200"
+            style={{
+              gridTemplateColumns: `repeat(${x + 1},auto )`,
+              gridTemplateRows: `repeat(${y + 1},auto )`,
+            }}
+          >
+            {board}
+          </div>
         </div>
       </div>
     </div>

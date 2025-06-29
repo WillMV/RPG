@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pixel, type PixelProps } from "../Pixel";
 
 import clsx from "clsx";
 import { colorTransition } from "../../styles";
 import { ZoomSlider } from "../ZoomSlider";
 import { createRoot } from "react-dom/client";
+import { useDebounce } from "../../hooks/useDebounce";
 
 interface BoardProps {
   x: number;
@@ -17,6 +18,18 @@ interface BoardProps {
 export const Board = ({ x, y, color }: BoardProps) => {
   const [pixels, setPixels] = useState<PixelProps[][]>([]);
   const [zoom, setZoom] = useState(1);
+  const [columns, setColumns] = useState<number>(x);
+  const [rows, setRows] = useState<number>(y);
+
+  const boardRef = useRef<HTMLDivElement>(null);
+  const { setValue } = useDebounce({
+    delay: 1000,
+    onDebounce: () => {
+      createPixels();
+      setColumns(x);
+      setRows(y);
+    },
+  });
 
   const child = useMemo(
     () => <div className="size-full" style={{ background: color }} />,
@@ -24,8 +37,23 @@ export const Board = ({ x, y, color }: BoardProps) => {
   );
 
   useEffect(() => {
-    createPixels();
+    setValue("");
   }, [x, y]);
+
+  useEffect(() => {
+    document?.addEventListener(
+      "wheel",
+      (e) => {
+        if (e.ctrlKey) e.preventDefault();
+      },
+      { passive: false }
+    );
+    return () => {
+      document?.addEventListener("wheel", (e) => {
+        e.preventDefault();
+      });
+    };
+  }, []);
 
   useEffect(() => {
     const handlerDrop = (e: MouseEvent) => {
@@ -43,16 +71,6 @@ export const Board = ({ x, y, color }: BoardProps) => {
 
         const root = createRoot(pixel);
         root.render(child);
-
-        // pixel.appendChild(<div>teste</div>);
-
-        // const pixelTarget = pixels[parseInt(index1)][parseInt(index2)];
-
-        // setPixels((prevPixels) => {
-        //   const newPixels = [...prevPixels];
-        //   newPixels[parseInt(index1)][parseInt(index2)] = newPixel;
-        //   return newPixels;
-        // });
       }
     };
 
@@ -63,6 +81,8 @@ export const Board = ({ x, y, color }: BoardProps) => {
   }, [child]);
 
   useEffect(() => {
+    if (!boardRef.current) return;
+    const currentBoard = boardRef.current;
     const eventHandler = (e: WheelEvent) => {
       if (e.ctrlKey) {
         e.preventDefault();
@@ -76,33 +96,20 @@ export const Board = ({ x, y, color }: BoardProps) => {
       }
     };
 
-    document?.addEventListener(
-      "wheel",
-      (e) => {
-        if (e.ctrlKey) e.preventDefault();
-      },
-      { passive: false }
-    );
-    document
-      .getElementById("board")
-      ?.addEventListener("wheel", eventHandler, { passive: false });
+    currentBoard.addEventListener("wheel", eventHandler, { passive: false });
     return () => {
-      document
-        .getElementById("board")
-        ?.removeEventListener("wheel", eventHandler);
-      document?.addEventListener("wheel", (e) => {
-        e.preventDefault();
-      });
+      currentBoard.removeEventListener("wheel", eventHandler);
     };
-  }, [zoom]);
+  }, [zoom, boardRef]);
 
   const createPixels = () => {
     const items: PixelProps[][] = [];
 
+    console.log("createPixels", x, y);
+
     for (let index = 0; index <= x - 1; index++) {
       items.push(
         Array.from({ length: y }).map((_, i) => ({
-          size: zoom,
           key: `${index}_${i}`,
           id: `pixel_${index}_${i}`,
         }))
@@ -140,8 +147,8 @@ export const Board = ({ x, y, color }: BoardProps) => {
           <div
             className="grid p-10 transition-transform duration-200"
             style={{
-              gridTemplateColumns: `repeat(${x + 1},auto )`,
-              gridTemplateRows: `repeat(${y + 1},auto )`,
+              gridTemplateColumns: `repeat(${columns + 1},auto )`,
+              gridTemplateRows: `repeat(${rows + 1},auto )`,
               transform: `scale(${zoom})`,
             }}
           >

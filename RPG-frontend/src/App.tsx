@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import "./App.css";
 import { Header } from "./components/Header";
@@ -18,6 +18,38 @@ function App() {
   const [yPixels, setYPixels] = useState(10);
   const [sideBar, setSideBar] = useState(false);
   const [color, setColor] = useState<string>("#ff0000");
+  // const [previewColor, setPreviewColor] = useState<string>("#ff0000");
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    console.log("colorChanged");
+  }, [color]);
+  // useEffect(() => {
+  //   console.log("previewColorChanged");
+  // }, [previewColor]);
+
+  useEffect(() => {
+    if (!inputRef.current) return;
+    const currentInput = inputRef.current;
+    // const handlePreviewChange = (e: Event) => {
+    //   const target = e.target as HTMLInputElement;
+    //   setPreviewColor(target.value);
+    // };
+
+    const handleChange = (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      setColor(target.value);
+    };
+
+    // currentInput.addEventListener("input", handlePreviewChange);
+    currentInput.addEventListener("change", handleChange);
+
+    return () => {
+      // currentInput.removeEventListener("input", handlePreviewChange);
+      currentInput.removeEventListener("change", handleChange);
+    };
+  }, [inputRef]);
 
   const ThemeButton = () => {
     if (!isDark) {
@@ -78,19 +110,16 @@ function App() {
               Cor
             </label>
             <input
+              ref={inputRef}
               id="color"
+              defaultValue={color}
               type="color"
-              value={color}
-              onChange={(e) => {
-                setColor(e.target.value);
-              }}
             />
           </fieldset>
         </SideBar>
-        <div
+        <main
           className={clsx(
-            "flex flex-col h-screen overflow-clip w-screen min-w-0",
-
+            "flex flex-col h-screen w-screen  min-w-0",
             sideBar ? " not-md:hidden" : ""
           )}
         >
@@ -111,7 +140,7 @@ function App() {
           </Header>
 
           <Board x={xPixels} y={yPixels} color={color} />
-        </div>
+        </main>
       </div>
     </div>
   );

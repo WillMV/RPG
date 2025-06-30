@@ -16,10 +16,10 @@ io.on('connection',(socket)=>{
     socket.on('disconnect',()=>{
         console.log('Cliente desconctado',socket.id);//Log offline
     });
-    socket.on('mensagem',(msg)=>{
-        console.log('Mensagem recebida: ',msg);//Receber mensagem
-        io.emit('mensagem',msg);//Enviar mensagem para todos os clientes
+    socket.on('coords',(coords)=>{
+        socket.emit('coords',(x,y));
     });
+        
 });
 httpServer.listen(3000,()=>{
     console.log('Servidor rodando na porta 3000');

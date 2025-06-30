@@ -22,6 +22,8 @@ export const Board = ({ x, y, color }: BoardProps) => {
   const [rows, setRows] = useState<number>(y);
 
   const boardRef = useRef<HTMLDivElement>(null);
+  const pixelRef = useRef<HTMLDivElement>(null);
+
   const { setValue } = useDebounce({
     delay: 500,
     onDebounce: () => {
@@ -32,7 +34,12 @@ export const Board = ({ x, y, color }: BoardProps) => {
   });
 
   const child = useMemo(
-    () => <div className="size-full" style={{ background: color }} />,
+    () => (
+      <div
+        className="size-full absolute top-0 bottom-0 right-0 left-0 z-[-1]"
+        style={{ background: color }}
+      />
+    ),
     [color]
   );
 
@@ -56,22 +63,15 @@ export const Board = ({ x, y, color }: BoardProps) => {
   }, []);
 
   useEffect(() => {
+    if (!pixelRef.current) return;
+    const currentPixel = pixelRef.current;
+
     const handlerDrop = (e: MouseEvent) => {
-      const target = e.target;
+      const target = e.currentTarget;
+      if (!target) return;
 
-      if (target instanceof HTMLDivElement && target.id.includes("pixel")) {
-        const [name, index1, index2] = target.id.split("_");
-        if (!name || !index1 || !index2) {
-          return;
-        }
-        const pixel = document.getElementById(target.id);
-        if (!pixel) {
-          return;
-        }
-
-        const root = createRoot(pixel);
-        root.render(child);
-      }
+      const root = createRoot(currentPixel);
+      root.render(child);
     };
 
     document.addEventListener("mouseup", handlerDrop);
@@ -123,6 +123,17 @@ export const Board = ({ x, y, color }: BoardProps) => {
         Array.from({ length: y }).map((_, i) => ({
           key: `${index}_${i}`,
           id: `pixel_${index}_${i}`,
+          children: (
+            <div
+              id={`pixel_${index}_${i}`}
+              onClick={(e) => {
+                e.currentTarget.style.backgroundColor = color;
+              }}
+              className="size-full flex items-center justify-center "
+            >
+              {index},{i}
+            </div>
+          ),
         }))
       );
     }
@@ -146,7 +157,7 @@ export const Board = ({ x, y, color }: BoardProps) => {
     const board = pixels.map((col, i) => (
       <div key={i} className="flex flex-col">
         {col.map((pixelProps) => (
-          <Pixel {...pixelProps} key={pixelProps.id} />
+          <Pixel ref={pixelRef} {...pixelProps} key={pixelProps.id} />
         ))}
       </div>
     ));
@@ -161,21 +172,21 @@ export const Board = ({ x, y, color }: BoardProps) => {
         colorTransition
       )}
     >
-      <div className="absolute top-4 left-5 z-10 p-2 rounded-xl bg-gray-400/50">
+      <div className="absolute top-1 left-1 z-10 p-2 rounded-xl bg-gray-400/50">
         <ZoomSlider zoom={zoom} onZoomChange={handleZoomChange} />
       </div>
       <div
         ref={boardRef}
-        className="flex overflow-auto  size-full justify-center-safe items-center-safe"
+        className="flex overflow-auto p-18 size-full justify-center-safe items-center-safe origin-top-left"
       >
         <div
-          className="grid bg-amber-50 transition-transform duration-200"
+          className="grid overflow-visible transition-transform duration-200"
           style={{
             gridTemplateColumns: `repeat(${columns + 1},auto )`,
             gridTemplateRows: `repeat(${rows + 1},auto )`,
             transform: `scale(${zoom})`,
-            transformOrigin: "top left",
             willChange: "transform",
+            transformOrigin: "top left",
           }}
         >
           {board}

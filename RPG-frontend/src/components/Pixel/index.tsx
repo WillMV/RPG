@@ -1,22 +1,23 @@
 import clsx from "clsx";
 import { colorTransition } from "../../styles";
+import * as Motion from "motion/react-client";
 
 export interface PixelProps {
-  size: number;
+  size?: number;
   id?: string;
   children?: React.ReactNode;
 }
-export const Pixel = ({ children, id }: PixelProps) => {
+export const Pixel = ({ children, id, size = 1 }: PixelProps) => {
   return (
-    <div
+    <Motion.div
       id={id}
       className={clsx(
-        "dark:bg-gray-300 bg-gray-700 border-1 select-none  border-gray-500 size-10 ",
-
+        "border-1 relative flex select-none border-gray-700 dark:border-gray-300 size-10 ",
         colorTransition
       )}
+      style={{ width: 40 * size, height: 40 * size }}
     >
       {children}
-    </div>
+    </Motion.div>
   );
 };

@@ -1,23 +1,59 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pixel, type PixelProps } from "../Pixel";
-import React from "react";
+
+import clsx from "clsx";
+import { colorTransition } from "../../styles";
+import { ZoomSlider } from "../ZoomSlider";
+import { createRoot } from "react-dom/client";
+import { useDebounce } from "../../hooks/useDebounce";
 
 interface BoardProps {
-  size: number;
   x: number;
   y: number;
-  handleZoomChange: (value: number) => void;
+  color: string;
 }
 
-type PixelElement = React.ReactElement<PixelProps>;
+// type PixelElement = React.ReactElement<PixelProps>;
 
-export const Board = ({ x, y, size, handleZoomChange }: BoardProps) => {
-  const [pixels, setPixels] = useState<PixelElement[][]>([]);
+export const Board = ({ x, y, color }: BoardProps) => {
+  const [pixels, setPixels] = useState<PixelProps[][]>([]);
+  const [zoom, setZoom] = useState(1);
+  const [columns, setColumns] = useState<number>(x);
+  const [rows, setRows] = useState<number>(y);
+
+  const boardRef = useRef<HTMLDivElement>(null);
+  const { setValue } = useDebounce({
+    delay: 500,
+    onDebounce: () => {
+      createPixels();
+      setColumns(x);
+      setRows(y);
+    },
+  });
+
+  const child = useMemo(
+    () => <div className="size-full" style={{ background: color }} />,
+    [color]
+  );
 
   useEffect(() => {
-    createPixels();
+    setValue("");
   }, [x, y]);
+
+  useEffect(() => {
+    document?.addEventListener(
+      "wheel",
+      (e) => {
+        if (e.ctrlKey) e.preventDefault();
+      },
+      { passive: false }
+    );
+    return () => {
+      document?.removeEventListener("wheel", (e) => {
+        e.preventDefault();
+      });
+    };
+  }, []);
 
   useEffect(() => {
     const handlerDrop = (e: MouseEvent) => {
@@ -28,19 +64,13 @@ export const Board = ({ x, y, size, handleZoomChange }: BoardProps) => {
         if (!name || !index1 || !index2) {
           return;
         }
+        const pixel = document.getElementById(target.id);
+        if (!pixel) {
+          return;
+        }
 
-        const newPixel = (
-          <Pixel
-            size={size}
-            children={<div className="size-full bg-amber-400" />}
-          />
-        );
-
-        setPixels((prevPixels) => {
-          const newPixels = [...prevPixels];
-          newPixels[parseInt(index1)][parseInt(index2)] = newPixel;
-          return newPixels;
-        });
+        const root = createRoot(pixel);
+        root.render(child);
       }
     };
 
@@ -48,61 +78,107 @@ export const Board = ({ x, y, size, handleZoomChange }: BoardProps) => {
     return () => {
       document.removeEventListener("mouseup", handlerDrop);
     };
-  }, [pixels]);
+  }, [child]);
 
   useEffect(() => {
+    if (!boardRef.current) return;
+    const currentBoard = boardRef.current;
+
     const eventHandler = (e: WheelEvent) => {
-      if (e.ctrlKey) {
-        e.preventDefault();
-        if (e.deltaY < 0) {
-          const incrementSize = size + 0.2;
-          handleZoomChange(incrementSize >= 2 ? 2 : incrementSize);
-        } else {
-          const reduceSize = size - 0.2;
-          handleZoomChange(reduceSize <= 0.5 ? 0.5 : reduceSize);
-        }
-      }
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      if (!e.currentTarget) return;
+
+      const oldZoom = zoom;
+      const newZoom = Math.min(
+        Math.max(oldZoom + (e.deltaY < 0 ? 0.1 : -0.1), 0.5),
+        2
+      );
+
+      const rect = currentBoard.getBoundingClientRect();
+
+      const mouseX = e.clientX - rect.left + currentBoard.scrollLeft;
+      const mouseY = e.clientY - rect.top + currentBoard.scrollTop;
+      handleZoomChange(newZoom);
+
+      requestAnimationFrame(() => {
+        currentBoard.scrollTo({
+          left: mouseX * (newZoom / oldZoom) - (e.clientX - rect.left),
+          top: mouseY * (newZoom / oldZoom) - (e.clientY - rect.top),
+        });
+      });
     };
 
-    document.getElementById("board")?.addEventListener("wheel", eventHandler);
+    currentBoard.addEventListener("wheel", eventHandler, { passive: false });
     return () => {
-      document
-        .getElementById("board")
-        ?.removeEventListener("wheel", eventHandler);
+      currentBoard.removeEventListener("wheel", eventHandler);
     };
-  }, [size]);
+  }, [zoom, boardRef]);
 
   const createPixels = () => {
-    const items: PixelElement[][] = [];
+    const items: PixelProps[][] = [];
 
-    for (let index = 0; index <= x; index++) {
+    for (let index = 0; index <= x - 1; index++) {
       items.push(
-        Array.from({ length: y + 1 }).map((_, i) => (
-          <Pixel key={i} id={`pixel_${index}_${i}`} size={size} />
-        ))
+        Array.from({ length: y }).map((_, i) => ({
+          key: `${index}_${i}`,
+          id: `pixel_${index}_${i}`,
+        }))
       );
     }
     setPixels(items);
   };
 
+  const handleZoomChange = (newZoom: number) => {
+    setZoom(newZoom);
+
+    requestAnimationFrame(() => {
+      const el = boardRef.current;
+      if (el) {
+        el.style.overflow = "hidden";
+        void el.offsetHeight;
+        el.style.overflow = "auto";
+      }
+    });
+  };
+
+  const board = useMemo(() => {
+    const board = pixels.map((col, i) => (
+      <div key={i} className="flex flex-col">
+        {col.map((pixelProps) => (
+          <Pixel {...pixelProps} key={pixelProps.id} />
+        ))}
+      </div>
+    ));
+    return board;
+  }, [pixels]);
+
   return (
     <div
-      id="board"
-      className="flex w-[80vw] h-[80vh] justify-center items-center overflow-scroll bg-gray-200 "
+      className={clsx(
+        "relative flex flex-1 items-center min-h-0 min-w-0 max-h-full  mx-5 my-5 p-5",
+        "bg-gray-200 dark:bg-gray-600 rounded-2xl border border-gray-400",
+        colorTransition
+      )}
     >
+      <div className="absolute top-4 left-5 z-10 p-2 rounded-xl bg-gray-400/50">
+        <ZoomSlider zoom={zoom} onZoomChange={handleZoomChange} />
+      </div>
       <div
-        className="flex transition-transform duration-200"
-        style={{ transform: `scale(${size}` }}
+        ref={boardRef}
+        className="flex overflow-auto  size-full justify-center-safe items-center-safe"
       >
         <div
-          className="grid"
-          style={{ gridTemplateColumns: `repeat(${x + 1}, auto)` }}
+          className="grid bg-amber-50 transition-transform duration-200"
+          style={{
+            gridTemplateColumns: `repeat(${columns + 1},auto )`,
+            gridTemplateRows: `repeat(${rows + 1},auto )`,
+            transform: `scale(${zoom})`,
+            transformOrigin: "top left",
+            willChange: "transform",
+          }}
         >
-          {pixels.map((col, i) => (
-            <div key={i} className="flex flex-col">
-              {col.map((pixel) => pixel)}
-            </div>
-          ))}
+          {board}
         </div>
       </div>
     </div>

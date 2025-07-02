@@ -1,2 +1,9 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+
+html,
+body {
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}

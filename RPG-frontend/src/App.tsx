@@ -9,6 +9,8 @@ import { SideBar } from "./components/Sidebar";
 import { MdOutlineDarkMode, MdOutlineLightMode } from "react-icons/md";
 import { SideBarToggle } from "./components/SideBarToggle";
 
+import { Player, type PlayerProps } from "./components/Player";
+
 function App() {
   const [isDark, setIsDark] = useState(
     window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -18,8 +20,10 @@ function App() {
   const [yPixels, setYPixels] = useState(10);
   const [sideBar, setSideBar] = useState(false);
   const [color, setColor] = useState<string>("#ff0000");
+  const [players, setPlayers] = useState<PlayerProps[]>([]);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const divRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!inputRef.current) return;
@@ -37,16 +41,22 @@ function App() {
     };
   }, [inputRef]);
 
+  const createPlayer = () => {
+    setPlayers([{}]);
+  };
+
   const ThemeButton = () => {
     if (!isDark) {
       return (
-        <MdOutlineDarkMode
-          className={clsx(
-            "cursor-pointer dark:text-gray-300 text-gray-800 size-6",
-            colorTransition
-          )}
-          onClick={() => setIsDark(true)}
-        />
+        <>
+          <MdOutlineDarkMode
+            className={clsx(
+              "cursor-pointer dark:text-gray-300 overflow-clip text-gray-800 size-6",
+              colorTransition
+            )}
+            onClick={() => setIsDark(true)}
+          />
+        </>
       );
     } else {
       return (
@@ -60,13 +70,17 @@ function App() {
       );
     }
   };
-
+  <ThemeButton />;
   return (
-    <div className={clsx(isDark ? "dark" : "", "relative")}>
+    <div ref={divRef} className={clsx(isDark ? "dark" : "", "relative")}>
+      {players.map(() => (
+        <Player />
+      ))}
       <div
-        className={
-          "flex flex-row-reverse h-[100vh] bg-gray-200 dark:bg-gray-900"
-        }
+        className={clsx(
+          "flex flex-row-reverse h-[100vh] bg-gray-200 dark:bg-gray-900",
+          colorTransition
+        )}
       >
         <SideBar open={sideBar} onClose={() => setSideBar(false)}>
           <fieldset className="flex flex-col gap-2 justify-center flex-1 items-center border-[1px] rounded-[5px] p-2 border-gray-500 ">
@@ -102,15 +116,30 @@ function App() {
               type="color"
             />
           </fieldset>
+
+          <div className="flex w-full justify-around mt-2">
+            <p>Tema:</p>
+
+            <ThemeButton />
+          </div>
         </SideBar>
         <main
           className={clsx(
-            "flex flex-col h-screen w-screen  min-w-0",
+            "flex flex-col h-screen w-screen  min-w-0 overflow-clip",
             sideBar ? " not-md:hidden" : ""
           )}
         >
           <Header className=" justify-between gap-10">
-            <ThemeButton />
+            <button
+              className={clsx(
+                "bg-gray-400 shadow-gray-00 overflow-clip cursor-pointer hover:bg-slate-600 hover:shadow-md dark:bg-gray-500  dark:hover:bg-gray-600 rounded px-2 py-1 active:shadow-md  dark:active:bg-blue-900",
+                colorTransition
+              )}
+              onClick={createPlayer}
+            >
+              Criar Player
+            </button>
+
             <h1>Pixel RPG</h1>
             {!sideBar ? (
               <SideBarToggle

@@ -31,7 +31,7 @@ export const SideBar = ({ open, children, title, onClose }: SideBarProps) => {
         <div />
       </Header>
 
-      <div className="min-w-[20vw] p-4">{children}</div>
+      <div className="min-w-[20vw] py-2 px-4">{children}</div>
     </div>
   );
 };

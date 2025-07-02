@@ -8,8 +8,8 @@ export interface PlayerProps {
 
 export const Player = ({ name = "player" }: PlayerProps) => {
   const [position, setPosition] = useState({
-    x: window.screenX / 2,
-    y: window.screenY / 2,
+    x: 100,
+    y: 100,
   });
   const [isDragging, setIsDragging] = useState(false);
   const [innerPosition, setInnerPosition] = useState({ x: 0, y: 0 });
@@ -33,14 +33,10 @@ export const Player = ({ name = "player" }: PlayerProps) => {
   };
 
   useEffect(() => {
-    socket.on("coord", ({ x, y }: { x: number; y: number }) => {
+    socket.on("coords", ({ x, y }: { x: number; y: number }) => {
       setPosition({ x, y });
     });
   }, []);
-
-  useEffect(() => {
-    socket.emit("coord", position);
-  }, [position]);
 
   useEffect(() => {
     if (!playerRef.current) return;
@@ -83,15 +79,14 @@ export const Player = ({ name = "player" }: PlayerProps) => {
 
       setInnerPosition(pos);
     }
-
-    setPosition(
-      positionLimit({
-        x: e.pageX,
-        y: e.pageY,
-        screenX: window.innerWidth,
-        screenY: window.innerHeight,
-      })
-    );
+    const newPosition = positionLimit({
+      x: e.pageX,
+      y: e.pageY,
+      screenX: window.innerWidth,
+      screenY: window.innerHeight,
+    });
+    socket.emit("coords", newPosition);
+    setPosition(newPosition);
   };
 
   return (

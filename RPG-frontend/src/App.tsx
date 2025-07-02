@@ -10,22 +10,12 @@ import { MdOutlineDarkMode, MdOutlineLightMode } from "react-icons/md";
 import { SideBarToggle } from "./components/SideBarToggle";
 
 import { Player, type PlayerProps } from "./components/Player";
-import { io } from "socket.io-client";
+import { socket } from "./api/socket";
 
 function App() {
   const [isDark, setIsDark] = useState(
     window.matchMedia("(prefers-color-scheme: dark)").matches
   );
-
-  const socket = io("http://localhost:3000");
-
-  socket.on("connect", () => {
-    console.log("socket connected");
-  });
-
-  socket.on("disconnect", () => {
-    console.log("socket disconnected");
-  });
 
   const [xPixels, setXPixels] = useState(10);
   const [yPixels, setYPixels] = useState(10);
@@ -35,6 +25,16 @@ function App() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("socket connected");
+    });
+
+    socket.on("disconnect", () => {
+      console.log("socket disconnected");
+    });
+  }, []);
 
   useEffect(() => {
     if (!inputRef.current) return;

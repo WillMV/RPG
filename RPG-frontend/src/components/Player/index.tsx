@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
+import { socket } from "../../api/socket";
 
 export interface PlayerProps {
   name?: string;
@@ -30,6 +31,16 @@ export const Player = ({ name = "player" }: PlayerProps) => {
       y: Math.min(Math.max(y, 0), screenY),
     };
   };
+
+  useEffect(() => {
+    socket.on("coord", ({ x, y }: { x: number; y: number }) => {
+      setPosition({ x, y });
+    });
+  }, []);
+
+  useEffect(() => {
+    socket.emit("coord", position);
+  }, [position]);
 
   useEffect(() => {
     if (!playerRef.current) return;

@@ -20,6 +20,9 @@ export const Board = ({ x, y, color }: BoardProps) => {
   const [zoom, setZoom] = useState(1);
   const [columns, setColumns] = useState<number>(x);
   const [rows, setRows] = useState<number>(y);
+  const [transformStyle, setTransformStyle] = useState<string>(
+    "scale(1), translate(0, 0)"
+  );
 
   const boardRef = useRef<HTMLDivElement>(null);
   const pixelRef = useRef<HTMLDivElement>(null);
@@ -33,6 +36,10 @@ export const Board = ({ x, y, color }: BoardProps) => {
     },
   });
 
+  useEffect(() => {
+    setValue("");
+  }, [x, y]);
+
   const child = useMemo(
     () => (
       <div
@@ -42,10 +49,6 @@ export const Board = ({ x, y, color }: BoardProps) => {
     ),
     [color]
   );
-
-  useEffect(() => {
-    setValue("");
-  }, [x, y]);
 
   useEffect(() => {
     document?.addEventListener(
@@ -80,40 +83,40 @@ export const Board = ({ x, y, color }: BoardProps) => {
     };
   }, [child]);
 
-  useEffect(() => {
-    if (!boardRef.current) return;
-    const currentBoard = boardRef.current;
+  // useEffect(() => {
+  //   if (!boardRef.current) return;
+  //   const currentBoard = boardRef.current;
 
-    const eventHandler = (e: WheelEvent) => {
-      if (!e.ctrlKey) return;
-      e.preventDefault();
-      if (!e.currentTarget) return;
+  //   const eventHandler = (e: WheelEvent) => {
+  //     if (!e.ctrlKey) return;
+  //     e.preventDefault();
+  //     if (!e.currentTarget) return;
 
-      const oldZoom = zoom;
-      const newZoom = Math.min(
-        Math.max(oldZoom + (e.deltaY < 0 ? 0.1 : -0.1), 0.5),
-        2
-      );
+  //     const oldZoom = zoom;
+  //     const newZoom = Math.min(
+  //       Math.max(oldZoom + (e.deltaY < 0 ? 0.1 : -0.1), 0.5),
+  //       2
+  //     );
 
-      const rect = currentBoard.getBoundingClientRect();
+  //     const rect = currentBoard.getBoundingClientRect();
 
-      const mouseX = e.clientX - rect.left + currentBoard.scrollLeft;
-      const mouseY = e.clientY - rect.top + currentBoard.scrollTop;
-      handleZoomChange(newZoom);
+  //     const mouseX = e.clientX - rect.left + currentBoard.scrollLeft;
+  //     const mouseY = e.clientY - rect.top + currentBoard.scrollTop;
+  //     handleZoomChange(newZoom);
 
-      requestAnimationFrame(() => {
-        currentBoard.scrollTo({
-          left: mouseX * (newZoom / oldZoom) - (e.clientX - rect.left),
-          top: mouseY * (newZoom / oldZoom) - (e.clientY - rect.top),
-        });
-      });
-    };
+  //     requestAnimationFrame(() => {
+  //       currentBoard.scrollTo({
+  //         left: mouseX * (newZoom / oldZoom) - (e.clientX - rect.left),
+  //         top: mouseY * (newZoom / oldZoom) - (e.clientY - rect.top),
+  //       });
+  //     });
+  //   };
 
-    currentBoard.addEventListener("wheel", eventHandler, { passive: false });
-    return () => {
-      currentBoard.removeEventListener("wheel", eventHandler);
-    };
-  }, [zoom, boardRef]);
+  //   currentBoard.addEventListener("wheel", eventHandler, { passive: false });
+  //   return () => {
+  //     currentBoard.removeEventListener("wheel", eventHandler);
+  //   };
+  // }, [zoom, boardRef]);
 
   const createPixels = () => {
     const items: PixelProps[][] = [];
@@ -143,14 +146,23 @@ export const Board = ({ x, y, color }: BoardProps) => {
   const handleZoomChange = (newZoom: number) => {
     setZoom(newZoom);
 
-    requestAnimationFrame(() => {
-      const el = boardRef.current;
-      if (el) {
-        el.style.overflow = "hidden";
-        void el.offsetHeight;
-        el.style.overflow = "auto";
-      }
-    });
+    if (!boardRef.current) return;
+    const boardElement = boardRef.current;
+    const firstChild = boardElement.firstChild as HTMLElement;
+    if (!firstChild) return;
+
+    const contentWidth = firstChild.offsetWidth;
+    const contentHeight = firstChild.offsetHeight;
+
+    const contentScaledWidth = contentWidth * newZoom;
+    const contentScaledHeight = contentHeight * newZoom;
+
+    const translateX = (contentWidth - contentScaledWidth) / 2;
+    const translateY = (contentHeight - contentScaledHeight) / 2;
+
+    setTransformStyle(
+      `translate(${translateX}px, ${translateY}px) scale(${newZoom})`
+    );
   };
 
   const board = useMemo(() => {
@@ -184,7 +196,7 @@ export const Board = ({ x, y, color }: BoardProps) => {
           style={{
             gridTemplateColumns: `repeat(${columns + 1},auto )`,
             gridTemplateRows: `repeat(${rows + 1},auto )`,
-            transform: `scale(${zoom})`,
+            transform: transformStyle,
             willChange: "transform",
             transformOrigin: "top left",
           }}
